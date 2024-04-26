@@ -1,4 +1,3 @@
 # Facharbeit-2.-LJ
+Handelskalkulationsrechner
 
-Gruppenprojekt 2. Lehrjahr Fachinformatiker für Systemintegration.
-Projektzeit 5 Tage.
