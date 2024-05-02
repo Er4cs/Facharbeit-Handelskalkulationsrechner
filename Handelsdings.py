@@ -2,7 +2,7 @@ import tkinter
 import os
 import time
 import csv
-
+#from Klassen import*
 
 global rw,vk,rk,sp
 
@@ -11,12 +11,12 @@ class Buttons():
         global rw
         pass
 
-## Button Beenden
+## Beenden
 
     def btnBeenden_click(tmp):
         exit()
         
-## Button Speichern
+## Speichern
     
     def btnSpeichern_click(tmp):
         rw.Withdraw()
