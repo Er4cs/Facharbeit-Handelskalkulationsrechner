@@ -1,22 +1,28 @@
+import json
 import tkinter
 import os
 import time
 import csv
-#from Klassen import*
+import getpass
+import sqlite3
+import xml.etree.ElementTree as ET
+from tkinter import PhotoImage
+
 
 global rw,vk,rk,sp
+
 
 class Buttons():
     def __init__(self):
         global rw
         pass
 
-## Beenden
+## Button Beenden
 
     def btnBeenden_click(tmp):
         exit()
         
-## Speichern
+## Button Speichern
     
     def btnSpeichern_click(tmp):
         rw.Withdraw()
@@ -118,7 +124,7 @@ class Buttons():
             lblBVP = lblZVP - lblSkontoK
             rk.lblBVP["text"] = round(float (lblBVP), 2)
             
-            #lblGe = lblBVP * (txtGe/100)
+            lblGe = lblBVP * (txtGe/100)
             rk.lblGe["text"] = round(float (lblGe), 2)
             
             lblSK = lblBVP - lblGe
@@ -171,107 +177,193 @@ class DateienSpeichern():
     
     def __init__(self):
         pass
-    
-## Button Speichern CSV
+   
+## Button CSV
         
     def btnspeichernCSV_click(tmp):
-        try:
-            with open("Count.txt", 'r') as F:
-                c = int (F.read())
-        except:
-            c = 0
-        with open("Count.txt", 'w') as F:
-            F.write (str(c+1))
-        Datum = time.ctime()
-        name = str(c) + "_" + os.getlogin()+ "_" + Datum.replace(":", "-").replace(" ", "-") + '.csv'
-        fields = ['LEP', 'LR', 'ZEP', 'LSko', 'BEP', 'BK', 'BP', 'HK', 'SK', 'Ge', 'BVK', 'KSko', 'ZVK', 'LVP']
-        dicCSV = [
-                {  'LEP': 	vk.txtLEP.get().replace(".",","),
-                   'LR': 	vk.lblLR["text"].replace(".",","),
-                   'ZEP': 	vk.lblZEP["text"].replace(".",","),
-                   'LSko': 	vk.lblSkontoL["text"].replace(".",","),
-                   'BEP': 	vk.lblBEP["text"].replace(".",","),
-                   'BK': 	vk.txtBK.get().replace(".",","),
-                   'BP': 	vk.lblBPB1["text"].replace(".",","),
-                   'HK': 	vk.lblHK["text"].replace(".",","),
-                   'SK': 	vk.lblSK["text"].replace(".",","),
-                   'Ge': 	vk.lblGe["text"].replace(".",","),
-                   'BVK': 	vk.lblBVK["text"].replace(".",","),
-                   'KSko': 	vk.lblSkontoK["text"].replace(".",","),
-                   'ZVK': 	vk.lblZVK["text"].replace(".",","),
-                   'LVP':	vk.lblLVP["text"].replace(".",",")}
-                  ]
-        with open(name, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fields, delimiter=";")
-            writer.writeheader()
-            writer.writerows(dicCSV)
-        sp.Withdraw()
-        rk.Withdraw()
-        vk.Withdraw()
-        rw.Deiconify()
+       try:
+          with open("Count.txt", 'r') as F:
+            c = int(F.read())
+       except:
+        c = 0
+       with open("Count.txt", 'w') as F:
+        F.write(str(c + 1))
+       Datum = time.strftime("%Y-%m-%d %H:%M:%S")  # Aktuelles Datum und Uhrzeit im Format "Jahr-Monat-Tag Stunde:Minute:Sekunde"
+       username = getpass.getuser()
+       name = "data.csv"  # Festlegen des Dateinamens für die CSV-Datei
+       fields = ['ID', 'Windows-Nutzername', 'Datum',  'LEP', 'LR', 'ZEP', 'LSko', 'BEP', 'BK', 'BP', 'HK', 'SK', 'Ge', 'BVK', 'KSko', 'ZVK', 'LVP']
+       dicCSV = {'ID': c,
+              'Windows-Nutzername': username,
+              'Datum': Datum,
+              'LEP': 'LEP: ' + vk.txtLEP.get().replace(".", ","),
+              'LR': 'LR: ' + vk.lblLR["text"].replace(".", ","),
+              'ZEP': 'ZEP: ' + vk.lblZEP["text"].replace(".", ","),
+              'LSko': 'LSko: ' + vk.lblSkontoL["text"].replace(".", ","),
+              'BEP': 'BEP: ' + vk.lblBEP["text"].replace(".", ","),
+              'BK': 'BK: ' + vk.txtBK.get().replace(".", ","),
+              'BP': 'BP: ' + vk.lblBPB1["text"].replace(".", ","),
+              'HK': 'HK: ' + vk.lblHK["text"].replace(".", ","),
+              'SK': 'SK: ' + vk.lblSK["text"].replace(".", ","),
+              'Ge': 'Ge: ' + vk.lblGe["text"].replace(".", ","),
+              'BVK': 'BVK: ' + vk.lblBVK["text"].replace(".", ","),
+              'KSko': 'KSko: ' + vk.lblSkontoK["text"].replace(".", ","),
+              'ZVK': 'ZVK: ' + vk.lblZVK["text"].replace(".", ","),
+              'LVP': 'LVP: ' + vk.lblLVP["text"].replace(".", ",")}
+
+       with open(name, 'a', newline='') as csvfile:  # Öffnen der Datei im Anhänge-Modus ('a')
+        writer = csv.DictWriter(csvfile, fieldnames=fields, delimiter=";")
+        if os.path.getsize(name) == 0:  # Überprüfen, ob die Datei leer ist
+            writer.writeheader()  # Wenn die Datei leer ist, schreiben Sie die Headerzeile
+        writer.writerow(dicCSV)  # Schreiben der Daten in die Datei
+       sp.Withdraw()
+       rk.Withdraw()
+       vk.Withdraw()
+       rw.Deiconify()
         
-## Button Speichern XML
-    
+## Button XML
+    #Speicher Settings
     def btnspeichernXML_click(tmp):
         try:
             with open("Count.txt", 'r') as F:
-                c = int (F.read())
+                c = int(F.read())
         except:
             c = 0
         with open("Count.txt", 'w') as F:
-            F.write (str(c+1))
-        Datum = time.ctime()
-        name = str(c) + "_" + os.getlogin()+ "_" + Datum.replace(":", "-").replace(" ", "-") + '.xml'
-        datei = open(name,'a')
-        datei.write("\nTest")
-        datei.close ()
+            F.write(str(c + 1))
+        Datum = time.strftime("%Y-%m-%d %H:%M:%S")
+        username = getpass.getuser()
+
+    # Daten aus den Feldern abrufen
+        data = {
+        'ID': str(c),
+        'Windows-Nutzername': username,
+        'Datum': Datum,
+        'LEP': vk.txtLEP.get().replace(".", ","),
+        'LR': vk.lblLR["text"].replace(".", ","),
+        'ZEP': vk.lblZEP["text"].replace(".", ","),
+        'LSko': vk.lblSkontoL["text"].replace(".", ","),
+        'BEP': vk.lblBEP["text"].replace(".", ","),
+        'BK': vk.txtBK.get().replace(".", ","),
+        'BP': vk.lblBPB1["text"].replace(".", ","),
+        'HK': vk.lblHK["text"].replace(".", ","),
+        'SK': vk.lblSK["text"].replace(".", ","),
+        'Ge': vk.lblGe["text"].replace(".", ","),
+        'BVK': vk.lblBVK["text"].replace(".", ","),
+        'KSko': vk.lblSkontoK["text"].replace(".", ","),
+        'ZVK': vk.lblZVK["text"].replace(".", ","),
+        'LVP': vk.lblLVP["text"].replace(".", ",")
+    }
+
+    # XML-Struktur aufbauen
+        root = ET.Element("Data")
+        entry = ET.SubElement(root, "Entry")
+        for key, value in data.items():
+            sub_element = ET.SubElement(entry, key)
+            sub_element.text = value
+
+    # XML-Datei schreiben
+        tree = ET.ElementTree(root)
+        with open("data.xml", "ab") as xml_file:
+            tree.write(xml_file)
+
         sp.Withdraw()
         rk.Withdraw()
         vk.Withdraw()
         rw.Deiconify()
+
         
-## Button Speichern JSON
+## Button  JSON
     
     def btnspeichernJSON_click(tmp):
         try:
             with open("Count.txt", 'r') as F:
-                c = int (F.read())
+                c = int(F.read())
         except:
             c = 0
         with open("Count.txt", 'w') as F:
-            F.write (str(c+1))
-        Datum = time.ctime()
-        name = str(c) + "_" + os.getlogin()+ "_" + Datum.replace(":", "-").replace(" ", "-") + '.json'
-        datei = open(name,'a')
-        datei.write("\nTest")
-        datei.close ()
+            F.write(str(c + 1))
+        Datum = time.strftime("%Y-%m-%d %H:%M:%S")
+        username = getpass.getuser()
+
+    # Daten aus den Feldern abrufen
+        data = {
+           'ID': c,
+        'Windows-Nutzername': username,
+        'Datum': Datum,
+        'LEP': 'LEP: ' + vk.txtLEP.get().replace(".", ","),
+        'LR': 'LR: ' + vk.lblLR["text"].replace(".", ","),
+        'ZEP': 'ZEP: ' + vk.lblZEP["text"].replace(".", ","),
+        'LSko': 'LSko: ' + vk.lblSkontoL["text"].replace(".", ","),
+        'BEP': 'BEP: ' + vk.lblBEP["text"].replace(".", ","),
+        'BK': 'BK: ' + vk.txtBK.get().replace(".", ","),
+        'BP': 'BP: ' + vk.lblBPB1["text"].replace(".", ","),
+        'HK': 'HK: ' + vk.lblHK["text"].replace(".", ","),
+        'SK': 'SK: ' + vk.lblSK["text"].replace(".", ","),
+        'Ge': 'Ge: ' + vk.lblGe["text"].replace(".", ","),
+        'BVK': 'BVK: ' + vk.lblBVK["text"].replace(".", ","),
+        'KSko': 'KSko: ' + vk.lblSkontoK["text"].replace(".", ","),
+        'ZVK': 'ZVK: ' + vk.lblZVK["text"].replace(".", ","),
+        'LVP': 'LVP: ' + vk.lblLVP["text"].replace(".", ",")
+    }
+
+    # JSON-Datei öffnen und Daten schreiben
+        with open('data.json', 'a') as json_file:
+            json.dump(data, json_file)
+            json_file.write('\n')
+
         sp.Withdraw()
         rk.Withdraw()
         vk.Withdraw()
         rw.Deiconify()
         
-## Button Speichern SQL
-     
+# Speich Button und das Speicher Formatierung für inset_data.Sql
     def btnspeichernSQL_click(tmp):
         try:
             with open("Count.txt", 'r') as F:
-                c = int (F.read())
+                c = int(F.read())
         except:
             c = 0
         with open("Count.txt", 'w') as F:
-            F.write (str(c+1))
-        Datum = time.ctime()
-        name = str(c) + "_" + os.getlogin()+ "_" + Datum.replace(":", "-").replace(" ", "-") + '.sql'
-        datei = open(name,'a')
-        datei.write("\nTest")
-        datei.close ()
+            F.write(str(c + 1))
+        Datum = time.strftime("%Y-%m-%d %H:%M:%S")
+        username = getpass.getuser()
+    
+    # Daten aus den Feldern abrufen
+        LEP = 'LEP: ' + vk.txtLEP.get().replace(".", ",")
+        LR = 'LR: ' + vk.lblLR["text"].replace(".", ",")
+        ZEP = 'ZEP: ' + vk.lblZEP["text"].replace(".", ",")
+        LSko = 'LSko: ' + vk.lblSkontoL["text"].replace(".", ",")
+        BEP = 'BEP: ' + vk.lblBEP["text"].replace(".", ",")
+        BK = 'BK: ' + vk.txtBK.get().replace(".", ",")
+        BP = 'BP: ' + vk.lblBPB1["text"].replace(".", ",")
+        HK = 'HK: ' + vk.lblHK["text"].replace(".", ",")
+        SK = 'SK: ' + vk.lblSK["text"].replace(".", ",")
+        Ge = 'Ge: ' + vk.lblGe["text"].replace(".", ",")
+        BVK = 'BVK: ' + vk.lblBVK["text"].replace(".", ",")
+        KSko = 'KSko: ' + vk.lblSkontoK["text"].replace(".", ",")
+        ZVK = 'ZVK: ' + vk.lblZVK["text"].replace(".", ",")
+        LVP = 'LVP: ' + vk.lblLVP["text"].replace(".", ",")
+
+    # SQL-Abfrage zum Einfügen der Daten
+        sql_query = f'''
+                INSERT INTO data (ID, Windows_Nutzername, Datum, LEP, LR, ZEP, LSko, BEP, BK, BP, HK, SK, Ge, BVK, KSko, ZVK, LVP)
+                VALUES ({c}, '{username}', '{Datum}', '{LEP}', '{LR}', '{ZEP}', '{LSko}', '{BEP}', '{BK}', '{BP}', '{HK}', '{SK}', '{Ge}', '{BVK}', '{KSko}', '{ZVK}', '{LVP}');
+                '''
+
+    # SQL-Datei erstellen und SQL-Abfrage einfügen
+        with open("insert_data.sql", "a") as sql_file:
+            sql_file.write(sql_query)
+            sql_file.write("\n")
+
         sp.Withdraw()
         rk.Withdraw()
         vk.Withdraw()
         rw.Deiconify()
 
 
-## Hauptmenü
+
+
+## Main Seite glaube 
 
 class RechnerWahl():
     global frmMain
@@ -285,7 +377,7 @@ class RechnerWahl():
         frmMain.title("Handelskalkulationsrechner")
         frmMain.wm_geometry("400x250")
 
-        lbl = tkinter.Label(frmMain, text = "Bitte wählen Sie den Rechner aus!", font=('times', 16, 'bold'))
+        lbl = tkinter.Label(frmMain, text = "Wählen sie den gewünschten Rechner aus!", font=('times', 16, 'bold'))
         lbl.pack()
 
 ## Buttons
@@ -300,7 +392,7 @@ class RechnerWahl():
         btnVerkauf["width"] = 20
         btnVerkauf.place(x=120,y=120)
         
-        btnBeenden = tkinter.Button(frmMain, text = "Beenden", command = bt.btnBeenden_click)
+        btnBeenden = tkinter.Button(frmMain, text = "Schließen", command = bt.btnBeenden_click)
         btnBeenden["height"] = 2
         btnBeenden["width"] = 20
         btnBeenden.place(x=120,y=190)
@@ -315,283 +407,283 @@ class RechnerWahl():
 ## Vorwärtskalkulation    
     
 class Vorwärtskalkulation():
-    global frmVK
+    global VorKalk
     
     def __init__(self):
-        global frmVK
+        global VorKalk
         bt = Buttons()
     
-        frmVK = tkinter.Tk()
-        frmVK.name="frame"
-        frmVK.title("Vorwärtskalkulation")
-        frmVK.wm_geometry("1200x600")
+        VorKalk = tkinter.Tk()
+        VorKalk.name="frame"
+        VorKalk.title("Vorwärtskalkulation")
+        VorKalk.wm_geometry("1200x600")
         
-        lbl = tkinter.Label(frmVK, text = "Vorwärtskalkulation", font=('times', 12, 'bold'))
+        lbl = tkinter.Label(VorKalk, text = "Vorwärtskalkulation", font=('times', 12, 'bold'))
         lbl.pack()
 
-## VK Buttons
+##  Buttons VorwärtsKalkulation
 
-        btnBeenden = tkinter.Button(frmVK, text = "Beenden", command = bt.btnBeenden_click)
+        btnBeenden = tkinter.Button(VorKalk, text = "Beenden", command = bt.btnBeenden_click)
         btnBeenden["height"] = 2
         btnBeenden["width"] = 10
         btnBeenden.place(x=420,y=500)
 
-        btnBerechnenVK = tkinter.Button(frmVK, text = "Berechnen", command = bt.btnBerechnenVK_click)
+        btnBerechnenVK = tkinter.Button(VorKalk, text = "Berechnen", command = bt.btnBerechnenVK_click)
         btnBerechnenVK["height"] = 2
         btnBerechnenVK["width"] = 10
         btnBerechnenVK.place(x=120,y=500)
 
-        btnSpeichern = tkinter.Button(frmVK, text = "Speichern", command = bt.btnSpeichern_click)
+        btnSpeichern = tkinter.Button(VorKalk, text = "Speichern", command = bt.btnSpeichern_click)
         btnSpeichern["height"] = 2
         btnSpeichern["width"] = 10
         btnSpeichern.place(x=220,y=500)
 
-        btnZurück = tkinter.Button(frmVK, text = "Zurück", command = bt.btnZurück_click)
+        btnZurück = tkinter.Button(VorKalk, text = "Zurück", command = bt.btnZurück_click)
         btnZurück["height"] = 2
         btnZurück["width"] = 10
         btnZurück.place(x=320,y=500)
         
-## VK Überschriften 1
+##  Überschriften 1 VorwärtsKalkulation
 
 
-        lblPro = tkinter.Label(frmVK, text = "Zuschlagssätze in %")
+        lblPro = tkinter.Label(VorKalk, text = "Zuschlagssätze in %")
         lblPro["height"] =2
         lblPro["width"] = 40
         lblPro.place(x=140, y=30)
 
-        lblEur = tkinter.Label(frmVK, text = "Kalkulation in €")
+        lblEur = tkinter.Label(VorKalk, text = "Kalkulation in €")
         lblEur["height"] =2
         lblEur["width"] = 40
         lblEur.place(x=340, y=30)
         
-## VK Listeneinkaufspreis
+##  Listeneinkaufspreis VorwärtsKalkulation
 
-        lblLEP = tkinter.Label(frmVK, text = "Listeneinkaufspreis:", anchor="w")
+        lblLEP = tkinter.Label(VorKalk, text = "Listeneinkaufspreis:", anchor="w")
         lblLEP["height"] =2
         lblLEP["width"] = 20
         lblLEP.place(x=70, y=70)
         
-        self.txtLEP = tkinter.Entry(frmVK)
+        self.txtLEP = tkinter.Entry(VorKalk)
         self.txtLEP.place(x=420, y=75)
         
-## VK Liefer-Rabatt
+##  Liefer-Rabatt VorwärtsKalkulation
 
-        lblLR = tkinter.Label(frmVK, text = "Liefer-Rabatt:", anchor="w")
+        lblLR = tkinter.Label(VorKalk, text = "Liefer-Rabatt:", anchor="w")
         lblLR["height"] = 2
         lblLR["width"] = 20
         lblLR.place(x=70, y=120)
         
-        self.lblLR = tkinter.Label(frmVK, text = "0")
+        self.lblLR = tkinter.Label(VorKalk, text = "0")
         self.lblLR["height"] = 2
         self.lblLR["width"] = 20
         self.lblLR.place(x=410, y=120)
 
-        self.txtLR = tkinter.Entry(frmVK)
+        self.txtLR = tkinter.Entry(VorKalk)
         self.txtLR.place(x=220, y=125)
         
-## VK Zieleinkaufspreis
+##  Zieleinkaufspreis VorwärtsKalkulation
 
-        lblZEP = tkinter.Label(frmVK, text = "Zieleinkaufspreis:", anchor="w")
+        lblZEP = tkinter.Label(VorKalk, text = "Zieleinkaufspreis:", anchor="w")
         lblZEP["height"] = 2
         lblZEP["width"] = 20
         lblZEP.place(x=70, y=170)
         
-        self.lblZEP = tkinter.Label(frmVK, text = "0")
+        self.lblZEP = tkinter.Label(VorKalk, text = "0")
         self.lblZEP["height"] = 2
         self.lblZEP["width"] = 20
         self.lblZEP.place(x=410, y=170)
         
-## VK Liefer-Skonto
+##  Liefer-Skonto VorwärtsKalkulation
 
-        lblSkontoL = tkinter.Label(frmVK, text = "Liefer-Skonto:", anchor="w")
+        lblSkontoL = tkinter.Label(VorKalk, text = "Liefer-Skonto:", anchor="w")
         lblSkontoL["height"] = 2
         lblSkontoL["width"] = 20
         lblSkontoL.place(x=70, y=220)
         
-        self.txtSkontoL = tkinter.Entry(frmVK)
+        self.txtSkontoL = tkinter.Entry(VorKalk)
         self.txtSkontoL.place(x=220, y=225)
         
-        self.lblSkontoL = tkinter.Label(frmVK, text = "0")
+        self.lblSkontoL = tkinter.Label(VorKalk, text = "0")
         self.lblSkontoL["height"] = 2
         self.lblSkontoL["width"] = 20
         self.lblSkontoL.place(x=410, y=220)
         
-## VK Bareinkaufspreis
+##  Bareinkaufspreis VorwärtsKalkulation
 
-        lblBEP = tkinter.Label(frmVK, text = "Bareinkaufspreis:", anchor="w")
+        lblBEP = tkinter.Label(VorKalk, text = "Bareinkaufspreis:", anchor="w")
         lblBEP["height"] = 2
         lblBEP["width"] = 20
         lblBEP.place(x=70, y=270)
         
-        self.lblBEP = tkinter.Label(frmVK, text = "0")
+        self.lblBEP = tkinter.Label(VorKalk, text = "0")
         self.lblBEP["height"] = 2
         self.lblBEP["width"] = 20
         self.lblBEP.place(x=410, y=270)
         
-## VK Bezugskosten
+##  Bezugskosten VorwärtsKalkulation
 
-        lblBK = tkinter.Label(frmVK, text = "Bezugskosten:", anchor="w")
+        lblBK = tkinter.Label(VorKalk, text = "Bezugskosten:", anchor="w")
         lblBK["height"] = 2
         lblBK["width"] = 20
         lblBK.place(x=70, y=320)
         
-        self.txtBK = tkinter.Entry(frmVK)
+        self.txtBK = tkinter.Entry(VorKalk)
         self.txtBK.place(x=420, y=325)
         
-        self.lblBK = tkinter.Label(frmVK, text = "Fester Wert in €")
+        self.lblBK = tkinter.Label(VorKalk, text = "Fester Wert in €")
         self.lblBK["height"] = 2
         self.lblBK["width"] = 20
         self.lblBK.place(x=210, y=320)
         
-## VK Bezugspreis 1
+##  Bezugspreis 1 VorwärtsKalkulation
 
-        lblBP = tkinter.Label(frmVK, text = "Bezugspreis:", anchor="w")
+        lblBP = tkinter.Label(VorKalk, text = "Bezugspreis:", anchor="w")
         lblBP["height"] = 2
         lblBP["width"] = 20
         lblBP.place(x=70, y=370)
         
-        self.lblBPB1 = tkinter.Label(frmVK, text = "0")
+        self.lblBPB1 = tkinter.Label(VorKalk, text = "0")
         self.lblBPB1["height"] = 2
         self.lblBPB1["width"] = 20
         self.lblBPB1.place(x=410, y=370)
         
-## VK Überschriften 2
+##  Überschriften 2 VorwärtsKalkulation
 
-        lblEur = tkinter.Label(frmVK, text = "Kalkulation in €")
+        lblEur = tkinter.Label(VorKalk, text = "Kalkulation in €")
         lblEur["height"] =2
         lblEur["width"] = 40
         lblEur.place(x=920, y=30)
 
-        lblPro = tkinter.Label(frmVK, text = "Zuschlagssätze in %")
+        lblPro = tkinter.Label(VorKalk, text = "Zuschlagssätze in %")
         lblPro["height"] =2
         lblPro["width"] = 40
         lblPro.place(x=720, y=30)
         
-## VK Bezugspreis 2
+##  Bezugspreis 2 VorwärtsKalkulation
 
-        lblBP = tkinter.Label(frmVK, text = "Bezugspreis:", anchor="w")
+        lblBP = tkinter.Label(VorKalk, text = "Bezugspreis:", anchor="w")
         lblBP["height"] =2
         lblBP["width"] = 20
         lblBP.place(x=650, y=70)
         
-        self.lblBPB2 = tkinter.Label(frmVK, text = "0")
+        self.lblBPB2 = tkinter.Label(VorKalk, text = "0")
         self.lblBPB2["height"] = 2
         self.lblBPB2["width"] = 20
         self.lblBPB2.place(x=1000, y=70)
         
-## VK Handlungskosten
+##  Handlungskosten VorwärtsKalkulation
 
-        lblHK = tkinter.Label(frmVK, text = "Handlungskosten:", anchor="w")
+        lblHK = tkinter.Label(VorKalk, text = "Handlungskosten:", anchor="w")
         lblHK["height"] = 2
         lblHK["width"] = 20
         lblHK.place(x=650, y=120)
         
-        self.txtHK = tkinter.Entry(frmVK)
+        self.txtHK = tkinter.Entry(VorKalk)
         self.txtHK.place(x=800, y=125)
         
-        self.lblHK = tkinter.Label(frmVK, text = "0")
+        self.lblHK = tkinter.Label(VorKalk, text = "0")
         self.lblHK["height"] = 2
         self.lblHK["width"] = 20
         self.lblHK.place(x=1000, y=120)
         
-## VK Selbstkosten
+##  Selbstkosten VorwärtsKalkulation
 
-        lblSK = tkinter.Label(frmVK, text = "Selbstkosten:", anchor="w")
+        lblSK = tkinter.Label(VorKalk, text = "Selbstkosten:", anchor="w")
         lblSK["height"] = 2
         lblSK["width"] = 20
         lblSK.place(x=650, y=170)
         
-        self.lblSK = tkinter.Label(frmVK, text = "0")
+        self.lblSK = tkinter.Label(VorKalk, text = "0")
         self.lblSK["height"] = 2
         self.lblSK["width"] = 20
         self.lblSK.place(x=1000, y=170)
         
-## VK Gewinn
+##    Gewinn VorwärtsKalkulation
 
-        lblGe = tkinter.Label(frmVK, text = "Gewinn:", anchor="w")
+        lblGe = tkinter.Label(VorKalk, text = "Gewinn:", anchor="w")
         lblGe["height"] = 2
         lblGe["width"] = 20
         lblGe.place(x=650, y=220)
         
-        self.txtGe = tkinter.Entry(frmVK)
+        self.txtGe = tkinter.Entry(VorKalk)
         self.txtGe.place(x=800, y=225)
         
-        self.lblGe = tkinter.Label(frmVK, text = "0")
+        self.lblGe = tkinter.Label(VorKalk, text = "0")
         self.lblGe["height"] = 2
         self.lblGe["width"] = 20
         self.lblGe.place(x=1000, y=220)
         
-## VK Barverkaufspreis
+##    Barverkaufspreis VorwärtsKalkulation
 
-        lblBVP = tkinter.Label(frmVK, text = "Barverkaufspreis:", anchor="w")
+        lblBVP = tkinter.Label(VorKalk, text = "Barverkaufspreis:", anchor="w")
         lblBVP["height"] = 2
         lblBVP["width"] = 20
         lblBVP.place(x=650, y=270)
         
-        self.lblBVK = tkinter.Label(frmVK, text = "0")
+        self.lblBVK = tkinter.Label(VorKalk, text = "0")
         self.lblBVK["height"] = 2
         self.lblBVK["width"] = 20
         self.lblBVK.place(x=1000, y=270)
         
-## VK Kundenskonto
+##    Kundenskonto VorwärtsKalkulation
 
-        lblSkontoK = tkinter.Label(frmVK, text = "Kundenskonto:", anchor="w")
+        lblSkontoK = tkinter.Label(VorKalk, text = "Kundenskonto:", anchor="w")
         lblSkontoK["height"] = 2
         lblSkontoK["width"] = 20
         lblSkontoK.place(x=650, y=320)
         
-        self.txtSkontoK = tkinter.Entry(frmVK)
+        self.txtSkontoK = tkinter.Entry(VorKalk)
         self.txtSkontoK.place(x=800, y=325)
         
-        self.lblSkontoK = tkinter.Label(frmVK, text = "0")
+        self.lblSkontoK = tkinter.Label(VorKalk, text = "0")
         self.lblSkontoK["height"] = 2
         self.lblSkontoK["width"] = 20
         self.lblSkontoK.place(x=1000, y=320)
         
-## VK Zielverkaufspreis
+##    Zielverkaufspreis VorwärtsKalkulation
 
-        lblZVK = tkinter.Label(frmVK, text = "Zielverkaufspreis:", anchor="w")
+        lblZVK = tkinter.Label(VorKalk, text = "Zielverkaufspreis:", anchor="w")
         lblZVK["height"] = 2
         lblZVK["width"] = 20
         lblZVK.place(x=650, y=370)
         
-        self.lblZVK = tkinter.Label(frmVK, text = "0")
+        self.lblZVK = tkinter.Label(VorKalk, text = "0")
         self.lblZVK["height"] = 2
         self.lblZVK["width"] = 20
         self.lblZVK.place(x=1000, y=370)
         
-## VK Kundenrabatt
+##  Kundenrabatt VorwärtsKalkulation
 
-        lblKR = tkinter.Label(frmVK, text = "Kundenrabatt:", anchor="w")
+        lblKR = tkinter.Label(VorKalk, text = "Kundenrabatt:", anchor="w")
         lblKR["height"] = 2
         lblKR["width"] = 20
         lblKR.place(x=650, y=420)
         
-        self.txtKR = tkinter.Entry(frmVK)
+        self.txtKR = tkinter.Entry(VorKalk)
         self.txtKR.place(x=800, y=425)
         
-        self.lblKR = tkinter.Label(frmVK, text = "0")
+        self.lblKR = tkinter.Label(VorKalk, text = "0")
         self.lblKR["height"] = 2
         self.lblKR["width"] = 20
         self.lblKR.place(x=1000, y=420)
         
-## VK Listenverkaufspreis
+##  Listenverkaufspreis VorwärtsKalkulation
 
-        lblLVP = tkinter.Label(frmVK, text = "Listenverkaufspreis:", anchor="w")
+        lblLVP = tkinter.Label(VorKalk, text = "Listenverkaufspreis:", anchor="w")
         lblLVP["height"] = 2
         lblLVP["width"] = 20
         lblLVP.place(x=650, y=470)
 
-        self.lblLVP = tkinter.Label(frmVK, text = "0")
+        self.lblLVP = tkinter.Label(VorKalk, text = "0")
         self.lblLVP["height"] = 2
         self.lblLVP["width"] = 20
         self.lblLVP.place(x=1000, y=470)
     
     def Deiconify(tmp):
-        frmVK.deiconify()
+        VorKalk.deiconify()
     
     def Withdraw(tmp):
-        frmVK.withdraw()    
+        VorKalk.withdraw()    
 
 
 ## Rückwärtskalkulation
@@ -609,7 +701,7 @@ class Rückwärtskalkulation():
         lbl = tkinter.Label(frmRK, text = "Rückwärtskalkulation", font=('times', 12, 'bold'))
         lbl.pack()
 
-## RK Buttons
+##  Buttons Rückwärtskalkulation
 
         btnBeenden = tkinter.Button(frmRK, text = "Beenden", command = bt.btnBeenden_click)
         btnBeenden["height"] = 2
@@ -631,7 +723,7 @@ class Rückwärtskalkulation():
         btnZurück["width"] = 10
         btnZurück.place(x=880,y=500)
 
-## RK Überschriften 1
+##  Überschriften 1 Rückwärtskalkulation
 
         lblPro = tkinter.Label(frmRK, text = "Zuschlagssätze in %")
         lblPro["height"] =2
@@ -643,7 +735,7 @@ class Rückwärtskalkulation():
         lblEur["width"] = 40
         lblEur.place(x=340, y=30)
 
-## RK Listenverkaufspreis
+##  Listenverkaufspreis Rückwärtskalkulation
 
         lblLVP = tkinter.Label(frmRK, text = "Listenverkaufspreis:", anchor="w")
         lblLVP["height"] =2
@@ -653,7 +745,7 @@ class Rückwärtskalkulation():
         self.txtLVP = tkinter.Entry(frmRK)
         self.txtLVP.place(x=420, y=75)
         
-## RK Kundenrabatt
+## Kundenrabatt Rückwärtskalkulation
         
         lblKR = tkinter.Label(frmRK, text = "Kundenrabatt:", anchor="w")
         lblKR["height"] = 2
@@ -668,7 +760,7 @@ class Rückwärtskalkulation():
         self.txtKR = tkinter.Entry(frmRK)
         self.txtKR.place(x=220, y=125)
         
-## RK Zielverkaufspreis
+## Zielverkaufspreis Rückwärtskalkulation
         
         lblZVK = tkinter.Label(frmRK, text = "Zielverkaufspreis:", anchor="w")
         lblZVK["height"] = 2
@@ -680,7 +772,7 @@ class Rückwärtskalkulation():
         self.lblZVP["width"] = 20
         self.lblZVP.place(x=410, y=170)
         
-## RK Kundenskonto
+## Kundenskonto Rückwärtskalkulation
         
         lblSkontoK = tkinter.Label(frmRK, text = "Kundenskonto:", anchor="w")
         lblSkontoK["height"] = 2
@@ -695,7 +787,7 @@ class Rückwärtskalkulation():
         self.lblSkontoK["width"] = 20
         self.lblSkontoK.place(x=410, y=220)
         
-## RK Barverkaufspreis
+##  Barverkaufspreis Rückwärtskalkulation
         
         lblBVP = tkinter.Label(frmRK, text = "Barverkaufspreis:", anchor="w")
         lblBVP["height"] = 2
@@ -707,7 +799,7 @@ class Rückwärtskalkulation():
         self.lblBVP["width"] = 20
         self.lblBVP.place(x=410, y=270)
         
-## RK Gewinn
+##  Gewinn Rückwärtskalkulation
         
         lblGe = tkinter.Label(frmRK, text = "Gewinn:", anchor="w")
         lblGe["height"] = 2
@@ -722,7 +814,7 @@ class Rückwärtskalkulation():
         self.lblGe["width"] = 20
         self.lblGe.place(x=410, y=320)
         
-## RK Selbstkosten
+## Selbstkosten Rückwärtskalkulation
         
         lblSK = tkinter.Label(frmRK, text = "Selbstkosten:", anchor="w")
         lblSK["height"] = 2
@@ -734,7 +826,7 @@ class Rückwärtskalkulation():
         self.lblSK["width"] = 20
         self.lblSK.place(x=410, y=370)
         
-## RK Handlungskosten
+##  Handlungskosten Rückwärtskalkulation
         
         lblHK = tkinter.Label(frmRK, text = "Handlungskosten:", anchor="w")
         lblHK["height"] = 2
@@ -749,7 +841,7 @@ class Rückwärtskalkulation():
         self.lblHK["width"] = 20
         self.lblHK.place(x=410, y=420)
         
-## RK Bezugspreis 1
+## Bezugspreis 1 Rückwärtskalkulation
         
         lblBP1 = tkinter.Label(frmRK, text = "Bezugspreis:", anchor="w")
         lblBP1["height"] = 2
@@ -761,7 +853,7 @@ class Rückwärtskalkulation():
         self.lblBP1["width"] = 20
         self.lblBP1.place(x=410, y=470)
         
-## RK Überschriften 2
+##  Überschriften 2 Rückwärtskalkulation
         
         lblEur = tkinter.Label(frmRK, text = "Kalkulation in €")
         lblEur["height"] =2
@@ -773,7 +865,7 @@ class Rückwärtskalkulation():
         lblPro["width"] = 40
         lblPro.place(x=720, y=30)
         
-## RK Bezugspreis 2
+##  Bezugspreis 2 Rückwärtskalkulation
 
         lblBP2 = tkinter.Label(frmRK, text = "Bezugspreis:", anchor="w")
         lblBP2["height"] =2
@@ -785,7 +877,7 @@ class Rückwärtskalkulation():
         self.lblBP2["width"] = 20
         self.lblBP2.place(x=1000, y=70)
         
-## RK Bezugskosten
+## Bezugskosten Rückwärtskalkulation
         
         lblBK = tkinter.Label(frmRK, text = "Bezugskosten:", anchor="w")
         lblBK["height"] =2
@@ -800,7 +892,7 @@ class Rückwärtskalkulation():
         self.lblBK["width"] = 20
         self.lblBK.place(x=1000, y=120)
         
-## RK Bareinkaufspreis
+## Bareinkaufspreis Rückwärtskalkulation
         
         lblBEP = tkinter.Label(frmRK, text = "Bareinkaufspreis:", anchor="w")
         lblBEP["height"] =2
@@ -812,7 +904,7 @@ class Rückwärtskalkulation():
         self.lblBEP["width"] = 20
         self.lblBEP.place(x=1000, y=170)
         
-## RK Liefer-Skonto
+##  Liefer-Skonto Rückwärtskalkulation
         
         lblSkontoL = tkinter.Label(frmRK, text = "Liefer-Skonto:", anchor="w")
         lblSkontoL["height"] =2
@@ -827,7 +919,7 @@ class Rückwärtskalkulation():
         self.lblSkontoL["width"] = 20
         self.lblSkontoL.place(x=1000, y=220)
         
-## RK Zieleinkaufspreis
+##  Zieleinkaufspreis Rückwärtskalkulation
         
         lblZEP = tkinter.Label(frmRK, text = "Zieleinkaufspreis:", anchor="w")
         lblZEP["height"] =2
@@ -839,7 +931,7 @@ class Rückwärtskalkulation():
         self.lblZEP["width"] = 20
         self.lblZEP.place(x=1000, y=270)
         
-## RK Liefer-Rabatt
+##  Liefer-Rabatt Rückwärtskalkulation
         
         lblLR = tkinter.Label(frmRK, text = "Liefer-Rabatt:", anchor="w")
         lblLR["height"] =2
@@ -854,7 +946,7 @@ class Rückwärtskalkulation():
         self.lblLR["width"] = 20
         self.lblLR.place(x=1000, y=320)
         
-## RK Listeneinkaufspreis
+## Listeneinkaufspreis Rückwärtskalkulation
         
         lblLEP = tkinter.Label(frmRK, text = "Listeneinkaufspreis:", anchor="w")
         lblLEP["height"] =2
@@ -890,7 +982,7 @@ class Speichern():
         lbl = tkinter.Label(frmSP, text = "\nIn welchem Format soll gespeichert werden?", font=('times', 12, 'bold'))
         lbl.pack()
         
-## Buttons
+## Buttons für Speichern 
 
         btnSpeichernCSV = tkinter.Button(frmSP, text = "CSV", command = ds.btnspeichernCSV_click)
         btnSpeichernCSV["height"] = 2
